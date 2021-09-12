@@ -201,24 +201,27 @@ void boxBlur(struct Pixel** pArr, int width, int height){
 
 
 void swissCheese(struct Pixel** pArr, int width, int height) {
-    
-    /*int radius;
-    int centerX, centerY;
-    centerX = width-1 / 2;
-    centerY = height-1 / 2;
+    printf("Swiss cheese filter starting..\n");
+    int radius = 10;
+    int centerX = width / 2;
+    int centerY = height / 2;
     int x, y;
     unsigned char hole = 0;
     
-    // makes a "hole" in image
-    for (x = (centerX - radius); x <= (centerX + radius); x++){
-        for(y = (centerY - radius); y <= (centerY + radius); y++){
-            if (pow(x-centerX, 2) + pow(y-centerY, 2)<= pow(radius, 2)){
+    // makes a "hole" in center of image
+    for (x = (centerX - radius); x < (centerX + radius); x++){
+        printf("entering loop %d\n", x);
+        for(y = (centerY - radius); y < (centerY + radius); y++){
+            printf("entering loop %d\n", y);
+            if (pow(x-centerX, 2) + pow(y-centerY, 2)< pow(radius, 2)){
                 pArr[x][y].red = hole;
                 pArr[x][y].green = hole;
                 pArr[x][y].blue = hole;
             }
         }
-    }*/
+    }
+    
+    printf("Swiss cheese filter success\n");
 }
 
 
