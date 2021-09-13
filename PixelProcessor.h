@@ -201,7 +201,7 @@ void boxBlur(struct Pixel** pArr, int width, int height){
 
 
 void swissCheese(struct Pixel** pArr, int width, int height, int radius, int centerX, int centerY) {
-    printf("Swiss cheese filter starting..\n");
+    //printf("Swiss cheese filter starting..\n");
     //printf("width: %d, height: %d, radius: %d, center: (%d, %d)\n", width, height, radius, centerX, centerY);
     
     int x, y;
@@ -227,7 +227,7 @@ void swissCheese(struct Pixel** pArr, int width, int height, int radius, int cen
         }
     }
     
-    printf("Swiss cheese filter success\n");
+    //printf("Swiss cheese filter success\n");
 }
 
 

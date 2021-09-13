@@ -85,8 +85,17 @@ int main(int argc, char** argv) {
             case 'f':
                 fFlag = 1;
                 filterType = optarg;
+                if (strcmp(filterType, "b") == 0 ||
+                        strcmp(filterType, "B") == 0 || 
+                        strcmp(filterType, "c") == 0 ||
+                        strcmp(filterType, "C") == 0) {
+                    break;
+                }
                 //printf("filter type: %s\n", filterType);
-                break;
+                else{
+                    printf("Unknown filter type\n");
+                    exit(0);
+                }
             case '?':
                 printf("Unknown option: %c\n", optopt);
                 break;
@@ -138,40 +147,46 @@ int main(int argc, char** argv) {
             
             // if f is flagged
             if (fFlag == 1) {
-                printf("Starting filter..\n");
-                int shortSide, radius, xcenter, ycenter, counter;
-                shortSide = width;
-                if (height < shortSide) {
-                    shortSide = height;
-                }
-                counter = 0;
                 
-                // .01 - .20 (1-20% of shortest side)
-                /*double range = (.20-.05);
-                double div = RAND_MAX / range;
-                double randRatio = .05 +(rand() / div);*/
-                while (counter < (floor(shortSide * .1))) {
-                    double ratioRange = (.15-.05);
-                    double ratioDiv = RAND_MAX / ratioRange;
-                    double randRatio = .05 +(rand() / ratioDiv);
-                    radius = floor(shortSide * randRatio);
-                    
-                    double xRange = ((width-1) - 1);
-                    double xDiv = RAND_MAX / xRange;
-                    xcenter = floor(1 + (rand() / xDiv));
-                    
-                    double yRange = ((height-1) - 1);
-                    double yDiv = RAND_MAX / yRange;
-                    ycenter = floor(1 + (rand() / yDiv));
-                    
-                    swissCheese(pixelBody, width, height, radius, xcenter, ycenter);
-                  counter++;
+                if (strcmp(filterType, "c") == 0 ||
+                        strcmp(filterType, "C") == 0) {
+                    printf("Starting filter..\n");
+                    int shortSide, radius, xcenter, ycenter, counter;
+                    shortSide = width;
+                    if (height < shortSide) {
+                        shortSide = height;
+                    }
+                    counter = 0;
+
+                    // .01 - .20 (1-20% of shortest side)
+                    /*double range = (.20-.05);
+                    double div = RAND_MAX / range;
+                    double randRatio = .05 +(rand() / div);*/
+                    while (counter < (floor(shortSide * .1))) {
+                        double ratioRange = (.15-.05);
+                        double ratioDiv = RAND_MAX / ratioRange;
+                        double randRatio = .05 +(rand() / ratioDiv);
+                        radius = floor(shortSide * randRatio);
+
+                        double xRange = ((width-1) - 1);
+                        double xDiv = RAND_MAX / xRange;
+                        xcenter = floor(1 + (rand() / xDiv));
+
+                        double yRange = ((height-1) - 1);
+                        double yDiv = RAND_MAX / yRange;
+                        ycenter = floor(1 + (rand() / yDiv));
+
+                        swissCheese(pixelBody, width, height, radius, xcenter, ycenter);
+                      counter++;
+                    }
+                    printf("Swiss cheese filter success\n");
                 }
                 //boxBlur(pixelBody, width, height);
-             /*if (strcmp(&filterType, "b") == 0) {
+                if (strcmp(filterType, "b") == 0 ||
+                     strcmp(filterType, "B") == 0) {
                  boxBlur(pixelBody, width, height);
-             }*/
-                printf("Filter applied\n");
+             }
+                
             }
             
             // if output file name is flagged
@@ -194,7 +209,6 @@ int main(int argc, char** argv) {
             //
             printf("closing input file %s\n", inputfile);
             fclose(fileImport);
-            
             
             free(bmpheader);
             bmpheader = NULL;
