@@ -23,24 +23,24 @@ struct Pixel{
 void colorShiftPixels(struct Pixel** pArr, int width, int height, int rShift, int gShift, int bShift);
 
 
-void boxBlur(struct Pixel** pArr, int width, int height){
+void boxBlur(struct Pixel** pArr, int startX, int startY, int width, int height){
     
     printf("Starting box blur..\n");
     int x;
     int y;
     int r, g, b;
     
-    for (x = 0; x < width; x++) {
-        for (y = 0; y < height; y++) {
+    for (x = startX; x < width; x++) {
+        for (y = startY; y < height; y++) {
             r = 0;
             g = 0;
             b = 0;
             
             // edge case 1
-            if (x == 0) {
+            if (x == startX) {
                 //printf("EDGE CASE 1\n");
                 // corner case
-                if (y == 0) {
+                if (y == startY) {
                     //printf("CORNER CASE\n");
                     r = (pArr[x][y].red + pArr[x+1][y].red + pArr[x][y+1].red + pArr[x+1][y+1].red) / 4;
                     //printf("red blur adjust for pixel %d, %d: %d\n", x, y, r);
@@ -128,9 +128,9 @@ void boxBlur(struct Pixel** pArr, int width, int height){
                 
             }
             // edge case 3
-            else if (y == 0) {
+            else if (y == startY) {
                 //printf("Edge case 3\n");
-                if (x == 0) {
+                if (x == startX) {
                     //printf("Corner case repeat\n");
                     continue;
                 }
@@ -200,7 +200,7 @@ void boxBlur(struct Pixel** pArr, int width, int height){
 
 
 
-void swissCheese(struct Pixel** pArr, int width, int height, int radius, int centerX, int centerY) {
+void swissCheese(struct Pixel** pArr, int minX, int minY, int width, int height, int radius, int centerX, int centerY) {
     //printf("Swiss cheese filter starting..\n");
     //printf("width: %d, height: %d, radius: %d, center: (%d, %d)\n", width, height, radius, centerX, centerY);
     
@@ -208,11 +208,11 @@ void swissCheese(struct Pixel** pArr, int width, int height, int radius, int cen
     unsigned char hole = 0;
     int xStart = centerX - radius;
     int yStart = centerY - radius;
-    if (xStart < 0){
-        xStart = 0;
+    if (xStart < minX){
+        xStart = minX;
     }
-    if (yStart < 0){
-        yStart = 0;
+    if (yStart < minY){
+        yStart = minY;
     }
     // makes a "hole" in image
     for (x = xStart; x < (centerX + radius) && (x < width); x++){

@@ -1,11 +1,11 @@
 /**
-* (basic description of the program or class)
-*
-* Completion time: (estimation of hours spent on this program)
-*
-* @author Amy Ma
-* @version 09.12.21
-*/
+ * (basic description of the program or class)
+ *
+ * Completion time: (estimation of hours spent on this program)
+ *
+ * @author Amy Ma
+ * @version 09.12.21
+ */
 
 ////////////////////////////////////////////////////////////////////////////////
 //INCLUDES
@@ -33,6 +33,8 @@
 #define BMP_DIB_HEADER_SIZE 40
 #define MAXIMUM_IMAGE_SIZE 4096
 
+int const THREAD_COUNT = 4;
+
 //TODO: finish me
 
 
@@ -43,33 +45,95 @@ struct BMP_Header* bmpheader;
 struct DIB_Header* dibheader;
 struct Pixel** pixelBody;
 
+struct blurArgs {
+    struct Pixel** pArr;
+    int startX, endX;
+    int startY, endY;
+};
+
+struct cheeseArgs {
+    struct Pixel** pArr;
+    int endX, endY, startX, startY;
+};
+
+void* boxBlurThread(void *arg) {
+
+    printf("entering box blur thread\n");
+    struct blurArgs* args = arg;
+    printf("thread args - startX: %d, endX: %d, startY: %d, endY: %d\n", args->startX, args->endX, args->startY, args->endY);
+    boxBlur(args->pArr, args->startX, args->startY, args->endX, args->endY);
+    printf("success - exiting box blur thread\n");
+    pthread_exit(0);
+    return NULL;
+}
+
+void* cheeseThread(void *arg) {
+
+    printf("entering swiss cheese thread\n");
+    struct cheeseArgs* args = arg;
+    
+    /*int shortSide, radius, xcenter, ycenter, counter;
+    shortSide = args->endX;
+    if (args->endY < shortSide) {
+        shortSide = args->endY;
+    }
+    counter = 0;
+
+    // .01 - .20 (1-20% of shortest side)
+    //double range = (.20-.05);
+    while (counter < (floor(shortSide * .1))) {
+        double ratioRange = (.15 - .05);
+        double ratioDiv = RAND_MAX / ratioRange;
+        double randRatio = .05 + (rand() / ratioDiv);
+        radius = floor(shortSide * randRatio);
+
+        double xRange = ((args->endX - 1) - args->startX);
+        double xDiv = RAND_MAX / xRange;
+        xcenter = floor(1 + (rand() / xDiv));
+
+        double yRange = ((args->endY - 1) - args->startY);
+        double yDiv = RAND_MAX / yRange;
+        ycenter = floor(1 + (rand() / yDiv));
+        printf("thread args startx: %d, starty: %d, endx: %d, endy: %d, radius: %d, center: (%d, %d)\n", args->startX, args->startY, args->endX, args->endY, radius, xcenter, ycenter);
+        swissCheese(pixelBody, args->startX, args->startY, args->endX, args->endY, radius, xcenter, ycenter);
+        counter++;
+    }*/
+    //printf("thread args - width: %d, height: %d, radius: %d, center: (%d, %d)\n", args->width, args->height, args->radius, args->centerX, args->centerY);
+    //swissCheese(args->pArr, args->width, args->height, args->radius, args->centerX, args->centerY);
+    
+    printf("success - exiting swiss cheese thread\n");
+    pthread_exit(0);
+    return NULL;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
 //MAIN PROGRAM CODE
 
 int main(int argc, char** argv) {
-    
+
+    pthread_t tid;
+
     srand(time(0));
-    
+
     bmpheader = malloc(sizeof*(bmpheader));
     dibheader = malloc(sizeof*(dibheader));
-    
+
     char* inputfile;
     char* outputfile;
     char* filterType;
-    
+
     int height = 0;
     int width = 0;
-    
+
     int opt;
-    
+
     int oFlag = 0;
     int fFlag = 0;
-    
-    
-        while((opt = getopt(argc, argv, ":i:o:f:")) != -1){
-        switch(opt) {
+
+
+    while ((opt = getopt(argc, argv, ":i:o:f:")) != -1) {
+        switch (opt) {
             case 'i':
                 inputfile = optarg;
                 //printf("filename: %s\n", inputfile);
@@ -86,13 +150,12 @@ int main(int argc, char** argv) {
                 fFlag = 1;
                 filterType = optarg;
                 if (strcmp(filterType, "b") == 0 ||
-                        strcmp(filterType, "B") == 0 || 
+                        strcmp(filterType, "B") == 0 ||
                         strcmp(filterType, "c") == 0 ||
                         strcmp(filterType, "C") == 0) {
                     break;
-                }
-                //printf("filter type: %s\n", filterType);
-                else{
+                }//printf("filter type: %s\n", filterType);
+                else {
                     printf("Unknown filter type\n");
                     exit(0);
                 }
@@ -101,19 +164,19 @@ int main(int argc, char** argv) {
                 break;
         }
     }
-    
+
     //printf("oFlag = %d, fFlag = %d\n", oFlag, fFlag);
-   
-   for (; optind < argc; optind++){
+
+    for (; optind < argc; optind++) {
         printf("Given extra arguments: %s\n", argv[optind]);
     }
-    
+
     int dflen;
     int otlen;
     // If inputfile is valid
-    if(inputfile != NULL){
+    if (inputfile != NULL) {
         dflen = strlen(inputfile);
-        if (dflen >= 5 
+        if (dflen >= 5
                 && ((strcmp(&inputfile[dflen - 4], ".bmp") == 0))
                 && (access(inputfile, F_OK) != -1)) {
             printf("Opening file %s\n", inputfile);
@@ -128,77 +191,86 @@ int main(int argc, char** argv) {
                 //printf("Attempting DIB Header read\n");
                 readDIBHeader(fileImport, dibheader);
                 printf("DIB Header read success\n");
-                
-                
+
+
                 width = dibheader->width;
                 height = dibheader->height;
                 //printf("image size: %d x %d\n", width, height);
-                
-                pixelBody = (struct Pixel**) malloc(width * sizeof(*pixelBody));
-                for(int x = 0; x < width; x++){
-                    pixelBody[x] = (struct Pixel*) malloc(height * sizeof(struct Pixel));
+
+                pixelBody = (struct Pixel**) malloc(width * sizeof (*pixelBody));
+                for (int x = 0; x < width; x++) {
+                    pixelBody[x] = (struct Pixel*) malloc(height * sizeof (struct Pixel));
                 }
-                
+
                 //printf("Attempting pixel read..\n");
                 readPixelsBMP(fileImport, pixelBody, width, height);
                 printf("Pixel read success\n");
                 printf("Read success (3/3)\n");
-            } 
-            
+            }
+
             // if f is flagged
             if (fFlag == 1) {
-                
+                // If c is flagged - execute swiss cheese filter
                 if (strcmp(filterType, "c") == 0 ||
                         strcmp(filterType, "C") == 0) {
                     printf("Starting filter..\n");
-                    int shortSide, radius, xcenter, ycenter, counter;
-                    shortSide = width;
-                    if (height < shortSide) {
-                        shortSide = height;
-                    }
-                    counter = 0;
-
-                    // .01 - .20 (1-20% of shortest side)
-                    /*double range = (.20-.05);
-                    double div = RAND_MAX / range;
-                    double randRatio = .05 +(rand() / div);*/
-                    while (counter < (floor(shortSide * .1))) {
-                        double ratioRange = (.15-.05);
-                        double ratioDiv = RAND_MAX / ratioRange;
-                        double randRatio = .05 +(rand() / ratioDiv);
-                        radius = floor(shortSide * randRatio);
-
-                        double xRange = ((width-1) - 1);
-                        double xDiv = RAND_MAX / xRange;
-                        xcenter = floor(1 + (rand() / xDiv));
-
-                        double yRange = ((height-1) - 1);
-                        double yDiv = RAND_MAX / yRange;
-                        ycenter = floor(1 + (rand() / yDiv));
-
-                        swissCheese(pixelBody, width, height, radius, xcenter, ycenter);
-                      counter++;
+                    int i;
+                    struct cheeseArgs *chargs = (struct cheeseArgs*) malloc(sizeof (struct cheeseArgs));
+                    int newWidth = floor(width / THREAD_COUNT);
+                    for (i = 0; i < THREAD_COUNT; i++) {
+                        chargs->pArr = pixelBody;
+                        printf("thread: pixels added\n");
+                        chargs->startX = newWidth * i;
+                        printf("thread: startX added: %d\n", chargs->startX);
+                        chargs->endX = newWidth * (i + 1);
+                        printf("thread: endX added: %d\n", chargs->endX);
+                        chargs->startY = 0;
+                        printf("thread: startY added: %d\n", chargs->startY);
+                        chargs->endY = height;
+                        printf("thread: endY added: %d\n", chargs->endY);
+                        pthread_create(&tid, NULL, cheeseThread, (void*) chargs);
+                        pthread_join(tid, NULL);
                     }
                     printf("Swiss cheese filter success\n");
                 }
-                //boxBlur(pixelBody, width, height);
+                // if b is flagged, execute blur
                 if (strcmp(filterType, "b") == 0 ||
-                     strcmp(filterType, "B") == 0) {
-                 boxBlur(pixelBody, width, height);
-             }
-                
+                        strcmp(filterType, "B") == 0) {
+                    int i;
+                    struct blurArgs *blargs = (struct blurArgs*) malloc(sizeof (struct blurArgs));
+                    int newWidth = floor(width / THREAD_COUNT);
+                    //boxBlur(pixelBody, 0, 0, width, height);
+                    for (i = 0; i < THREAD_COUNT; i++) {
+                        blargs->pArr = pixelBody;
+                        //printf("thread: pixels added\n");
+                        blargs->startX = newWidth * i;
+                        //printf("thread: startX added: %d\n", blargs->startX);
+                        blargs->endX = (i + 1) * newWidth;
+                        //printf("thread: endX added: %d\n", blargs->endX);
+                        blargs->startY = 0;
+                        //printf("thread: startY added: %d\n", blargs->startY);
+                        blargs->endY = height;
+                        //printf("thread: endY added: %d\n", blargs->endY);
+                        pthread_create(&tid, NULL, boxBlurThread, (void*) blargs);
+                        pthread_join(tid, NULL);
+                    }
+                    free(blargs);
+                    blargs = NULL;
+
+                }
+
             }
-            
+
             // if output file name is flagged
-            if (oFlag == 1){
+            if (oFlag == 1) {
                 printf("Beginning file export\n");
                 otlen = strlen(outputfile);
                 //printf("output filename: %s\nlength: %d\n", outputfile, otlen);
-                if (otlen == 0){
+                if (otlen == 0) {
                     outputfile = strcat(inputfile, "-copy");
                     printf("output filename: %s\n", outputfile);
                 }
-                
+
                 FILE* fileExport = fopen(outputfile, "w");
                 writeBMPHeader(fileExport, bmpheader);
                 writeDIBHeader(fileExport, dibheader);
@@ -209,7 +281,7 @@ int main(int argc, char** argv) {
             //
             printf("closing input file %s\n", inputfile);
             fclose(fileImport);
-            
+
             free(bmpheader);
             bmpheader = NULL;
             free(dibheader);
@@ -217,17 +289,19 @@ int main(int argc, char** argv) {
             free(pixelBody);
             pixelBody = NULL;
 
-            
+
         } else {
             printf("Data file has an invalid name or does not exist\n");
             //print_usage();
             exit(1);
         }
-    } else { 
+    } else {
         printf("No data file name provided.  This is a required field\n");
         //print_usage();
         exit(1);
     }
-    
+
     return (EXIT_SUCCESS);
 }
+
+
