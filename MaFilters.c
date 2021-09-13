@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <string.h>
+#include <time.h>
 
 //TODO: finish me
 
@@ -44,11 +45,13 @@ struct Pixel** pixelBody;
 
 
 
-
 ////////////////////////////////////////////////////////////////////////////////
 //MAIN PROGRAM CODE
 
 int main(int argc, char** argv) {
+    
+    srand(time(0));
+    
     bmpheader = malloc(sizeof*(bmpheader));
     dibheader = malloc(sizeof*(dibheader));
     
@@ -136,7 +139,35 @@ int main(int argc, char** argv) {
             // if f is flagged
             if (fFlag == 1) {
                 printf("Starting filter..\n");
-                boxBlur(pixelBody, width, height);
+                int shortSide, radius, xcenter, ycenter, counter;
+                shortSide = width;
+                if (height < shortSide) {
+                    shortSide = height;
+                }
+                counter = 0;
+                
+                // .01 - .20 (1-20% of shortest side)
+                /*double range = (.20-.05);
+                double div = RAND_MAX / range;
+                double randRatio = .05 +(rand() / div);*/
+                while (counter < (floor(shortSide * .1))) {
+                    double ratioRange = (.15-.05);
+                    double ratioDiv = RAND_MAX / ratioRange;
+                    double randRatio = .05 +(rand() / ratioDiv);
+                    radius = floor(shortSide * randRatio);
+                    
+                    double xRange = ((width-1) - 1);
+                    double xDiv = RAND_MAX / xRange;
+                    xcenter = floor(1 + (rand() / xDiv));
+                    
+                    double yRange = ((height-1) - 1);
+                    double yDiv = RAND_MAX / yRange;
+                    ycenter = floor(1 + (rand() / yDiv));
+                    
+                    swissCheese(pixelBody, width, height, radius, xcenter, ycenter);
+                  counter++;
+                }
+                //boxBlur(pixelBody, width, height);
              /*if (strcmp(&filterType, "b") == 0) {
                  boxBlur(pixelBody, width, height);
              }*/
