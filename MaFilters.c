@@ -63,7 +63,7 @@ void* boxBlurThread(void *arg) {
 
     printf("entering box blur thread\n");
     struct blurArgs* args = arg;
-    printf("thread args - startX: %d, endX: %d, startY: %d, endY: %d\n", args->startX, args->endX, args->startY, args->endY);
+    //printf("thread args - startX: %d, endX: %d, startY: %d, endY: %d\n", args->startX, args->endX, args->startY, args->endY);
     boxBlur(args->pArr, args->startX, args->startY, args->endX, args->endY);
     printf("success - exiting box blur thread\n");
     pthread_exit(0);
@@ -98,7 +98,7 @@ void* cheeseThread(void *arg) {
         double yRange = ((args->endY - 1) - args->startY);
         double yDiv = RAND_MAX / yRange;
         ycenter = floor(1 + (rand() / yDiv));
-        printf("thread args startx: %d, starty: %d, endx: %d, endy: %d, radius: %d, center: (%d, %d)\n", args->startX, args->startY, args->endX, args->endY, radius, xcenter, ycenter);
+        //printf("thread args startx: %d, starty: %d, endx: %d, endy: %d, radius: %d, center: (%d, %d)\n", args->startX, args->startY, args->endX, args->endY, radius, xcenter, ycenter);
         swissCheese(pixelBody, args->endX, args->endY, radius, xcenter, ycenter);
         //counter++;
     }
@@ -227,15 +227,15 @@ int main(int argc, char** argv) {
                     int newWidth = round(width / THREAD_COUNT);
                     for (i = 0; i < THREAD_COUNT; i++) {
                         chargs->pArr = pixelBody;
-                        printf("thread: pixels added\n");
+                        //printf("thread: pixels added\n");
                         chargs->startX = 0;
-                        printf("thread: startX added: %d\n", chargs->startX);
+                        //printf("thread: startX added: %d\n", chargs->startX);
                         chargs->endX = width;
-                        printf("thread: endX added: %d\n", chargs->endX);
+                        //printf("thread: endX added: %d\n", chargs->endX);
                         chargs->startY = 0;
-                        printf("thread: startY added: %d\n", chargs->startY);
+                        //printf("thread: startY added: %d\n", chargs->startY);
                         chargs->endY = height;
-                        printf("thread: endY added: %d\n", chargs->endY);
+                        //printf("thread: endY added: %d\n", chargs->endY);
                         pthread_create(&tid, NULL, cheeseThread, (void*) chargs);
                         pthread_join(tid, NULL);
                    }
