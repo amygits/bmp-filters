@@ -13,6 +13,14 @@
 #include <stddef.h>
 #include <math.h>
 
+typedef int bool;
+#define true 1
+#define false 0
+
+static bool corner1_pass = false;
+static bool corner2_pass = false;
+static bool corner3_pass = false;
+
 struct Pixel{
 	unsigned char red;
 	unsigned char green;
@@ -34,14 +42,15 @@ void boxBlur(struct Pixel** pArr, int startX, int startY, int width, int height)
         for (y = startY; y < height; y++) {
             r = 0;
             g = 0;
-            b = 0;
             
             // edge case 1
-            if (x == startX) {
+            if (x == startX && (corner1_pass == false || corner2_pass == false)) {
                 //printf("EDGE CASE 1\n");
+                //printf("y: %d  height-1: %d\n", y, height-1);
                 // corner case
-                if (y == startY) {
-                    //printf("CORNER CASE\n");
+                if (y == startY && corner1_pass == false) {
+                    //printf("CORNER CASE 1 \n");
+                    //printf("y: %d  height-1: %d\n", y, height-1);
                     r = (pArr[x][y].red + pArr[x+1][y].red + pArr[x][y+1].red + pArr[x+1][y+1].red) / 4;
                     //printf("red blur adjust for pixel %d, %d: %d\n", x, y, r);
                     b = (pArr[x][y].blue + pArr[x+1][y].blue + pArr[x][y+1].blue + pArr[x+1][y+1].blue) / 4;
@@ -51,11 +60,14 @@ void boxBlur(struct Pixel** pArr, int startX, int startY, int width, int height)
                     pArr[x][y].red = r;
                     pArr[x][y].green = g;
                     pArr[x][y].blue = b;
+                    corner1_pass = true;
                     continue;
                 }
                 // corner case
-                if (y == height - 1) {
-                    //printf("CORNER CASE\n");
+                
+                if (y == height - 1 && corner2_pass == false) {
+                    //printf("CORNER CASE 2\n");
+                    //printf("y: %d  height-1: %d\n", y, height-1);
                     r = (pArr[x][y].red + pArr[x+1][y].red + pArr[x][y-1].red + pArr[x+1][y-1].red) / 4;
                     //printf("red blur adjust for pixel %d, %d: %d\n", x, y, r);
                     b = (pArr[x][y].blue + pArr[x+1][y].blue + pArr[x][y-1].blue + pArr[x+1][y-1].blue) / 4;
@@ -65,9 +77,11 @@ void boxBlur(struct Pixel** pArr, int startX, int startY, int width, int height)
                     pArr[x][y].red = r;
                     pArr[x][y].green = g;
                     pArr[x][y].blue = b;
+                    corner2_pass = true;
                     continue;
                 }
                 
+                //printf("normal edge case run\n");
                 r = (pArr[x][y].red + pArr[x][y+1].red + pArr[x][y-1].red 
                         + pArr[x+1][y].red + pArr[x+1][y+1].red + pArr[x+1][y-1].red) / 6;
                 //printf("red blur adjust for pixel %d, %d: %d\n", x, y, r);
@@ -83,10 +97,10 @@ void boxBlur(struct Pixel** pArr, int startX, int startY, int width, int height)
             } 
             // edge case 2
             else if (x == width - 1) {
-                 //printf("EDGE CASE 2\n");
+                //printf("EDGE CASE 2\n");
                 // corner case
                 if (y == 0) {
-                    //printf("CORNER CASE\n");
+                    //printf("CORNER CASE 3\n");
                     r = (pArr[x][y].red + pArr[x-1][y].red + pArr[x][y+1].red + pArr[x-1][y+1].red) / 4;
                     //printf("red blur adjust for pixel %d, %d: %d\n", x, y, r);
                     b = (pArr[x][y].blue + pArr[x-1][y].blue + pArr[x][y+1].blue + pArr[x-1][y+1].blue) / 4;
@@ -100,7 +114,7 @@ void boxBlur(struct Pixel** pArr, int startX, int startY, int width, int height)
                 }
                 // corner case
                 if (y == height - 1) {
-                    //printf("CORNER CASE\n");
+                    //printf("CORNER CASE 4\n");
                     r = (pArr[x][y].red + pArr[x-1][y].red + pArr[x][y-1].red + pArr[x-1][y-1].red) / 4;
                     //printf("red blur adjust for pixel %d, %d: %d\n", x, y, r);
                     b = (pArr[x][y].blue + pArr[x-1][y].blue + pArr[x][y-1].blue + pArr[x-1][y-1].blue) / 4;

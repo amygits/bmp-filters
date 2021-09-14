@@ -216,7 +216,7 @@ int main(int argc, char** argv) {
                     printf("Starting filter..\n");
                     int i;
                     struct cheeseArgs *chargs = (struct cheeseArgs*) malloc(sizeof (struct cheeseArgs));
-                    int newWidth = floor(width / THREAD_COUNT);
+                    int newWidth = round(width / THREAD_COUNT);
                     for (i = 0; i < THREAD_COUNT; i++) {
                         chargs->pArr = pixelBody;
                         printf("thread: pixels added\n");
@@ -238,8 +238,34 @@ int main(int argc, char** argv) {
                         strcmp(filterType, "B") == 0) {
                     int i;
                     struct blurArgs *blargs = (struct blurArgs*) malloc(sizeof (struct blurArgs));
-                    int newWidth = floor(width / THREAD_COUNT);
+                    int newWidth = round(width / THREAD_COUNT);
+                    //printf("new width: %d\n", newWidth);
+                    if (newWidth <= 1){
+                        newWidth = 1;
+                    }
+                    printf("new width: %d\n", newWidth);
+                    if (newWidth < THREAD_COUNT){
+                        for (i = 0; i < width; i++) {
+                        blargs->pArr = pixelBody;
+                        //printf("thread: pixels added\n");
+                        blargs->startX = i;
+                        //printf("thread: startX added: %d\n", blargs->startX);
+                        blargs->endX = (i + 1);
+                        //printf("thread: endX added: %d\n", blargs->endX);
+                        blargs->startY = 0;
+                        //printf("thread: startY added: %d\n", blargs->startY);
+                        blargs->endY = height;
+                        //printf("thread: endY added: %d\n", blargs->endY);
+                        pthread_create(&tid, NULL, boxBlurThread, (void*) blargs);
+                        pthread_join(tid, NULL);
+                    }
+                        
+                    free(blargs);
+                    blargs = NULL;
+                    }
+                
                     //boxBlur(pixelBody, 0, 0, width, height);
+                else {
                     for (i = 0; i < THREAD_COUNT; i++) {
                         blargs->pArr = pixelBody;
                         //printf("thread: pixels added\n");
@@ -256,10 +282,11 @@ int main(int argc, char** argv) {
                     }
                     free(blargs);
                     blargs = NULL;
-
                 }
-
             }
+        }
+        
+    
 
             // if output file name is flagged
             if (oFlag == 1) {
