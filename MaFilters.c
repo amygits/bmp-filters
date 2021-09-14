@@ -1,10 +1,13 @@
 /**
- * (basic description of the program or class)
+ * This source file contains the main function for a threaded program that
+ * Loads an image(.bmp) file
+ * Applies a filter to it
+ * Saves it to disk
  *
- * Completion time: (estimation of hours spent on this program)
+ * Completion time: 10 hours
  *
  * @author Amy Ma
- * @version 09.12.21
+ * @version 3.0.09.13.21
  */
 
 ////////////////////////////////////////////////////////////////////////////////

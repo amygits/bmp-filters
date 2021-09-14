@@ -1,7 +1,7 @@
 /**
 * A utility functions for doing pixel transformations.
 *
-* Completion time: -1 minutes
+* Completion time: 8 hours
 *
 * @author Amy Ma
 * @version 2.0.9.12.21
@@ -31,7 +31,10 @@ struct Pixel{
 //NOT NEEDED FOR THREADING HW.
 void colorShiftPixels(struct Pixel** pArr, int width, int height, int rShift, int gShift, int bShift);
 
-
+/* Computes and applies box blur algorithm for each pixel in pixel array
+ * @param struct Pixel** pArr(double pointer to pixel array), int startX (starting x coordinate), int startY (starting Y coordinate)
+ * @param int width, int height
+ */
 void boxBlur(struct Pixel** pArr, int startX, int startY, int width, int height){
     
     printf("Starting box blur..\n");
@@ -216,7 +219,8 @@ void boxBlur(struct Pixel** pArr, int startX, int startY, int width, int height)
 
 /* makes a "hole" in an image pixel body 
  * at (x,y) x (x,y) coordinates 
- * given center of specified radius */
+ * given center of specified radius 
+ */
 void swissCheese(struct Pixel** pArr, int width, int height, int radius, int centerX, int centerY) {
     //printf("Swiss cheese filter starting..\n");
     //printf("width: %d, height: %d, radius: %d, center: (%d, %d)\n", width, height, radius, centerX, centerY);
