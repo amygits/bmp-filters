@@ -72,16 +72,17 @@ void* cheeseThread(void *arg) {
     printf("entering swiss cheese thread\n");
     struct cheeseArgs* args = arg;
     
-    /*int shortSide, radius, xcenter, ycenter, counter;
+    int shortSide, radius, xcenter, ycenter, counter;
     shortSide = args->endX;
     if (args->endY < shortSide) {
         shortSide = args->endY;
     }
+    
+    int maxHoles = (floor(shortSide * .1));
     counter = 0;
-
     // .01 - .20 (1-20% of shortest side)
     //double range = (.20-.05);
-    while (counter < (floor(shortSide * .1))) {
+    while (holes < maxHoles) {
         double ratioRange = (.15 - .05);
         double ratioDiv = RAND_MAX / ratioRange;
         double randRatio = .05 + (rand() / ratioDiv);
@@ -95,15 +96,17 @@ void* cheeseThread(void *arg) {
         double yDiv = RAND_MAX / yRange;
         ycenter = floor(1 + (rand() / yDiv));
         printf("thread args startx: %d, starty: %d, endx: %d, endy: %d, radius: %d, center: (%d, %d)\n", args->startX, args->startY, args->endX, args->endY, radius, xcenter, ycenter);
-        swissCheese(pixelBody, args->startX, args->startY, args->endX, args->endY, radius, xcenter, ycenter);
-        counter++;
-    }*/
+        swissCheese(pixelBody, args->endX, args->endY, radius, xcenter, ycenter);
+        //counter++;
+    }
+    
     //printf("thread args - width: %d, height: %d, radius: %d, center: (%d, %d)\n", args->width, args->height, args->radius, args->centerX, args->centerY);
     //swissCheese(args->pArr, args->width, args->height, args->radius, args->centerX, args->centerY);
     
     printf("success - exiting swiss cheese thread\n");
     pthread_exit(0);
     return NULL;
+    
 }
 
 
@@ -208,11 +211,13 @@ int main(int argc, char** argv) {
                 printf("Read success (3/3)\n");
             }
 
-            // if f is flagged
+            // if f is flagged ///////////////////////////////////////////
             if (fFlag == 1) {
-                // If c is flagged - execute swiss cheese filter
+                
+                // If c is flagged - execute swiss cheese filter /////////////////
                 if (strcmp(filterType, "c") == 0 ||
                         strcmp(filterType, "C") == 0) {
+                    
                     printf("Starting filter..\n");
                     int i;
                     struct cheeseArgs *chargs = (struct cheeseArgs*) malloc(sizeof (struct cheeseArgs));
@@ -220,9 +225,9 @@ int main(int argc, char** argv) {
                     for (i = 0; i < THREAD_COUNT; i++) {
                         chargs->pArr = pixelBody;
                         printf("thread: pixels added\n");
-                        chargs->startX = newWidth * i;
+                        chargs->startX = 0;
                         printf("thread: startX added: %d\n", chargs->startX);
-                        chargs->endX = newWidth * (i + 1);
+                        chargs->endX = width;
                         printf("thread: endX added: %d\n", chargs->endX);
                         chargs->startY = 0;
                         printf("thread: startY added: %d\n", chargs->startY);
@@ -230,10 +235,12 @@ int main(int argc, char** argv) {
                         printf("thread: endY added: %d\n", chargs->endY);
                         pthread_create(&tid, NULL, cheeseThread, (void*) chargs);
                         pthread_join(tid, NULL);
-                    }
+                   }
                     printf("Swiss cheese filter success\n");
                 }
-                // if b is flagged, execute blur
+                
+                // if b is flagged, execute blur ///////////////////////////////////
+                
                 if (strcmp(filterType, "b") == 0 ||
                         strcmp(filterType, "B") == 0) {
                     int i;
@@ -244,6 +251,7 @@ int main(int argc, char** argv) {
                         newWidth = 1;
                     }
                     printf("new width: %d\n", newWidth);
+                    // IF size of new width is less than thread count **
                     if (newWidth < THREAD_COUNT){
                         for (i = 0; i < width; i++) {
                         blargs->pArr = pixelBody;
@@ -258,13 +266,12 @@ int main(int argc, char** argv) {
                         //printf("thread: endY added: %d\n", blargs->endY);
                         pthread_create(&tid, NULL, boxBlurThread, (void*) blargs);
                         pthread_join(tid, NULL);
-                    }
+                        }
                         
                     free(blargs);
                     blargs = NULL;
                     }
                 
-                    //boxBlur(pixelBody, 0, 0, width, height);
                 else {
                     for (i = 0; i < THREAD_COUNT; i++) {
                         blargs->pArr = pixelBody;
@@ -285,8 +292,6 @@ int main(int argc, char** argv) {
                 }
             }
         }
-        
-    
 
             // if output file name is flagged
             if (oFlag == 1) {

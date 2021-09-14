@@ -20,6 +20,7 @@ typedef int bool;
 static bool corner1_pass = false;
 static bool corner2_pass = false;
 static bool corner3_pass = false;
+static int holes = 0;
 
 struct Pixel{
 	unsigned char red;
@@ -213,8 +214,10 @@ void boxBlur(struct Pixel** pArr, int startX, int startY, int width, int height)
 }
 
 
-
-void swissCheese(struct Pixel** pArr, int minX, int minY, int width, int height, int radius, int centerX, int centerY) {
+/* makes a "hole" in an image pixel body 
+ * at (x,y) x (x,y) coordinates 
+ * given center of specified radius */
+void swissCheese(struct Pixel** pArr, int width, int height, int radius, int centerX, int centerY) {
     //printf("Swiss cheese filter starting..\n");
     //printf("width: %d, height: %d, radius: %d, center: (%d, %d)\n", width, height, radius, centerX, centerY);
     
@@ -222,11 +225,11 @@ void swissCheese(struct Pixel** pArr, int minX, int minY, int width, int height,
     unsigned char hole = 0;
     int xStart = centerX - radius;
     int yStart = centerY - radius;
-    if (xStart < minX){
-        xStart = minX;
+    if (xStart < 0){
+        xStart = 0;
     }
-    if (yStart < minY){
-        yStart = minY;
+    if (yStart < 0){
+        yStart = 0;
     }
     // makes a "hole" in image
     for (x = xStart; x < (centerX + radius) && (x < width); x++){
@@ -240,7 +243,7 @@ void swissCheese(struct Pixel** pArr, int minX, int minY, int width, int height,
             }
         }
     }
-    
+    holes++;
     //printf("Swiss cheese filter success\n");
 }
 
